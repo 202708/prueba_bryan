@@ -1,0 +1,165 @@
+import datetime
+
+
+# Lista de listas para almacenar el estado de las ubicaciones (1: vendida, 0: disponible)
+ubicaciones = []
+for _ in range(10):
+    fila = [0] * 10
+    ubicaciones.append(fila)
+asistentes = []
+
+# lista asociativa almacenar los precios de las entradas
+precios = {
+    'Platinum': 120000,
+    'Gold': 80000,
+    'Silver': 50000
+}
+
+# Lista para almacenar los asistentes
+asistentes = []  
+def comprar_entradas():
+
+    cantidad_entradas = int(input("Ingrese la cantidad de entradas a comprar (entre 1 y 3): "))
+    
+    while cantidad_entradas < 1 or cantidad_entradas > 3:
+        print("La cantidad de entradas debe ser entre 1 y 3.")
+        cantidad_entradas = int(input("Ingrese la cantidad de entradas a comprar (entre 1 y 3): "))
+
+    ubicaciones_disponibles()
+
+    for _ in range(cantidad_entradas):
+
+        ubicacion = int(input("Ingrese el número de la ubicación deseada: "))
+        # Se valida la ubicacion
+        while ubicacion < 1 or ubicacion > 100:
+            print("La ubicación seleccionada no es válida. Ingrese nuevamente.")
+            ubicacion = int(input("Ingrese el número de la ubicación deseada: "))
+        
+        # se valida el estado de la ubicacion
+        while not validar_ubicacion_disponible(ubicacion):
+            print("La ubicación seleccionada no está disponible. Por favor, elija otra.")
+            
+            ubicacion = int(input("Ingrese el número de la ubicación deseada: "))#si la ubicacion es distinta a 1 y 100 arroja un mensaje
+            while ubicacion < 1 or ubicacion > 100:
+                print("La ubicación seleccionada no es válida. Ingrese nuevamente.")
+                ubicacion = int(input("Ingrese el número de la ubicación deseada: "))
+        
+        # Determinamos el tipo de ubicaciòn
+        if ubicacion <= 20:
+            tipo_entrada = 'Platinum'
+        elif ubicacion <= 50:
+            tipo_entrada = 'Gold'
+        else:
+            tipo_entrada = 'Silver'
+        precio_entrada = precios[tipo_entrada]# Se obtiene el precio en funcion del tipo de entrada
+        
+        run_asistente = input("Ingrese el RUN del asistente sin puntos, sin guion y sin DV: ")
+        while not validar_run(run_asistente): #si no valida el rut imprime mensaje no valido
+            print("El formato del RUN no es válido. Ingréselo nuevamente.")
+            run_asistente = input("Ingrese el RUN del asistente: ")
+        asignar_ubicacion(ubicacion)# realizamos la asignacion de la ubicacion
+        asistentes.append((run_asistente, ubicacion, tipo_entrada)) # registramos la informacion en la lista de asistentes
+
+        print("La operación se ha realizado correctamente.")
+def ubicaciones_disponibles():
+    #Muestra el estado actual de las ubicaciones disponibles.
+    print("Estado de las ubicaciones disponibles:")
+    for i in range(10):
+        for j in range(10):
+            if ubicaciones[i][j] == 0:
+                print(f"{i * 10 + j + 1:<3}", end="")
+            else:
+                print("X  ", end="")
+        print()
+    print(40*'_')
+def listado_asistentes():
+    #Muestra el listado de asistentes ordenados por RUN.
+    def get_run(asistente):
+
+       # Obtiene el RUN de un asistente.
+        return asistente[0]
+
+    print("Listado de asistentes:")
+    asistentes_ordenados = sorted(asistentes, key=get_run)
+    for asistente in asistentes_ordenados:
+        print(f"RUN: {asistente[0]}, Ubicación: {asistente[1]}, Tipo de entrada: {asistente[2]}")
+def mostrar_ganancias_totales():
+    #Calcula y muestra las ganancias totales por entradas.
+    
+    total_platinum = 0
+    total_gold = 0
+    total_silver = 0
+
+    for asistente in asistentes:
+        if asistente[2] == 'Platinum':
+            total_platinum += precios['Platinum']
+        elif asistente[2] == 'Gold':
+            total_gold += precios['Gold']
+        elif asistente[2] == 'Silver':
+            total_silver += precios['Silver']
+
+    total_entradas = len(asistentes)
+    total_ganancias = total_platinum + total_gold + total_silver
+
+    print("Ganancias totales:")
+    print("Tipo Entrada   Cantidad   Total")
+    print(f"Platinum       {calcular_cantidad_entradas('Platinum'):<10} {total_platinum:>7}")
+    print(f"Gold           {calcular_cantidad_entradas('Gold'):<10} {total_gold:>7}")
+    print(f"Silver         {calcular_cantidad_entradas('Silver'):<10} {total_silver:>7}")
+    print(f"TOTAL          {total_entradas:<10} {total_ganancias:>7}")
+def salir():
+    fecha_actual = datetime.date.today()  #calcular la fecha actual
+    print("Saliendo del sistema...")
+    print("Bryan concha")
+    print("¡Gracias por usar la aplicación de Creativos.cl!")
+    print(f"Fecha: ", datetime.date.today()) #permite mostrar fecha actual
+
+def validar_ubicacion_disponible(ubicacion):
+    
+    #Valida si la ubicación seleccionada está disponible.
+    fila = (ubicacion - 1) // 10
+    columna = (ubicacion - 1) % 10
+    return ubicaciones[fila][columna] == 0
+print(60*'_')
+def asignar_ubicacion(ubicacion):
+    #Asigna una ubicación como vendida.
+
+    fila = (ubicacion - 1) // 10
+    columna = (ubicacion - 1) % 10
+    ubicaciones[fila][columna] = 1
+def validar_run(run):
+    #Valida el formato del RUN ingresado.
+    return run.isdigit() and len(run) < 8
+def calcular_cantidad_entradas(tipo_entrada):
+    #Calcula la cantidad de entradas vendidas para un tipo de entrada dado.
+    count = 0
+    for asistente in asistentes:
+        if asistente[2] == tipo_entrada:
+            count += 1
+    return count
+def menu():
+    print('Bienvenido a la Productora\n   ***Creativos.cl***')
+    while True:
+        print('Opciones de menú')
+        print('1. Comprar entradas')
+        print('2. Mostrar ubicaciones disponibles')
+        print('3. Ver listado de asistentes')
+        print('4. Mostrar ganancias totales')
+        print('5. Salir')
+        
+        opcion = int(input('Seleccione una opción: '))
+
+        if opcion == 1:
+            comprar_entradas()
+        elif opcion == 2:
+            ubicaciones_disponibles()
+        elif opcion == 3:
+            listado_asistentes()
+        elif opcion == 4:
+            mostrar_ganancias_totales()
+        elif opcion == 5:
+            salir()
+            break
+        else:
+            print('Escoja una opción correcta!')
+menu()
